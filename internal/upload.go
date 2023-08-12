@@ -68,13 +68,13 @@ func uploadFile(file string) {
 		logger.Println("Success: uploaded image to imgur!")
 		logger.Println("Image URL:", resp.Data.Link)
 		logger.Println("Delete hash:", resp.Data.DeleteHash)
-		logger.Println("Please keep the above delete hash safe as it is required to the image from imgur.")
+		logger.Println("Please keep the above delete hash safe as it is required to remove the image from imgur.")
 	case http.StatusUnauthorized:
 		log.Println("Unauthorized")
 		log.Fatal("Please check if you have set a valid", CLIENT_ID_ENV_NAME)
 	default:
 		log.Println("Error:", resp.Status)
-		log.Fatal(resp.Data.Error)
+		log.Fatal(resp.Data.ErrorString)
 	}
 }
 func Upload(files []string) {

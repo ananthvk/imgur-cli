@@ -2,14 +2,16 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
 type ImgData struct {
-	Link       string `json:"link"`
-	DeleteHash string `json:"deletehash"`
-	Id         string `json:"id"`    // ID of the uploaded image
-	Error      string `json:"error"` // Only available when Success is false
+	Link        string          `json:"link"`
+	DeleteHash  string          `json:"deletehash"`
+	Id          string          `json:"id"`    // ID of the uploaded image
+	Error       json.RawMessage `json:"error"` // Only available when Success is false
+	ErrorString string
 }
 
 type Response struct {
@@ -21,5 +23,21 @@ type Response struct {
 // This function decodes the response from imgur and populates the Response struct
 func DecodeResponse(r io.Reader) (response Response, err error) {
 	err = json.NewDecoder(r).Decode(&response)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(response.Data.Error, &response.Data.ErrorString)
+	if err != nil {
+		type ImgurException struct {
+			Code    int
+			Message string
+		}
+		var imex ImgurException
+		err = json.Unmarshal(response.Data.Error, &imex)
+		if err != nil {
+			return
+		}
+		response.Data.ErrorString = "Error: " + fmt.Sprint(imex.Code) + " - " + imex.Message
+	}
 	return
 }
