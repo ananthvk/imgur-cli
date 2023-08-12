@@ -5,9 +5,16 @@ A cli tool to upload and delete images on [Imgur](https://imgur.com)
 1. Anonymous upload of images to imgur.
 2. Delete anonymous image uploads.
 
+# Installation
+
+Execute
+```
+go install github.com/ananthvk/imgur-cli@latest
+```
+
 # Getting the client id
 This program requires a client id to work.
-Get a client id from [https://api.imgur.com/oauth2/addclient](https://api.imgur.com/oauth2/addclient).
+Get a client id from [https://api.imgur.com/oauth2/addclient](https://api.imgur.com/oauth2/addclient)
 
 ## If you are on windows
 ```
