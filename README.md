@@ -38,6 +38,15 @@ You can also place it in your shell profile, for example `~/.bashrc` or `~/.zshr
 ```
 imgur-cli upload <path to image file>
 ```
+### Example
+```
+$ IMGUR_CLIENT_ID=xxxxxxxx imgur-cli upload TBJLzvUqnh4i6vtAnhCs--1--lvv9j_2x.jpg
+Success: uploaded image to imgur!
+Image URL: https://i.imgur.com/Sl0hhG1.jpg
+Delete hash: xxxxxxxxxxxx
+Please keep the above delete hash safe as it is required to remove the image from imgur.
+```
+Note after uploading, a delete hash will be shown. Please copy it as it is required if you want to remove the image in the future.
 
 ## Delete uploaded images
 ```
