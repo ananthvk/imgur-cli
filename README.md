@@ -1,5 +1,5 @@
 # imgur-cli
-A cli tool for [Imgur](https://imgur.com) to upload and delete images.
+A cli tool to upload and delete images on [Imgur](https://imgur.com)
 
 # Features
 1. Anonymous upload of images to imgur.
