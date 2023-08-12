@@ -10,21 +10,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
-const API_URL string = "https://api.imgur.com/3/image"
-const CLIENT_ID_ENV_NAME = "IMGUR_CLIENT_ID"
-const TIMEOUT = 15 * time.Second
-const HELP_ENV_MESSAGE = "This program requires a client id to upload images to imgur.\n\n" +
-	CLIENT_ID_ENV_NAME + ` environment variable not set.
-	Get a client id from https://api.imgur.com/oauth2/addclient
-
-	If you are on windows,
-	set ` + CLIENT_ID_ENV_NAME + "=[CLIENT_ID]" + `
-
-	If you are on linux,
-	export ` + CLIENT_ID_ENV_NAME + "=[CLIENT_ID]\n"
+var logger = log.New(os.Stdout, "", 0)
 
 // Upload - Uploads the list of files to imgur.
 // files - Slice of strings, which represents paths of the files to upload
@@ -36,20 +24,20 @@ func uploadFile(file string) {
 	writer := multipart.NewWriter(buffer)
 	imgWriter, err := writer.CreateFormFile("image", filepath.Base(file))
 	if err != nil {
-		log.Print("internal error: creating writer", file)
+		log.Println("internal error: creating writer", file)
 		log.Fatal(err)
 	}
 	// Read the file from disk
 	fil, err := os.Open(file)
 	if err != nil {
-		log.Print("error: could not open ", file)
+		log.Println("error: could not open ", file)
 		log.Fatal(err)
 	}
 	defer fil.Close()
 	// Copy the file to the buffer through imgWriter
 	_, err = io.Copy(imgWriter, fil)
 	if err != nil {
-		log.Print("internal error: while copying", file)
+		log.Println("internal error: while copying", file)
 		log.Fatal(err)
 	}
 	writer.Close()
@@ -57,23 +45,37 @@ func uploadFile(file string) {
 	client := &http.Client{Timeout: TIMEOUT}
 	req, err := http.NewRequest(http.MethodPost, API_URL, buffer)
 	if err != nil {
-		log.Print("internal error: while creating http request")
+		log.Println("internal error: while creating http request")
 		log.Fatal(err)
 	}
 	req.Header.Set("Authorization", "Client-Id "+os.Getenv(CLIENT_ID_ENV_NAME))
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	response, err := client.Do(req)
 	if err != nil {
-		log.Print("error: could not upload file to imgur")
+		log.Println("error: could not upload file to imgur")
 		log.Fatal(err)
 	}
 	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body)
+	// Read the response and decode the json into the struct
+	resp, err := DecodeResponse(response.Body)
 	if err != nil {
-		log.Print("error: could not read response")
+		log.Println("error: could not read response")
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", string(body))
+	// Handle HTTP errors
+	switch resp.Status {
+	case http.StatusOK, http.StatusAccepted, http.StatusCreated, http.StatusNonAuthoritativeInfo:
+		logger.Println("Success: uploaded image to imgur!")
+		logger.Println("Image URL:", resp.Data.Link)
+		logger.Println("Delete hash:", resp.Data.DeleteHash)
+		logger.Println("Please keep the above delete hash safe as it is required to the image from imgur.")
+	case http.StatusUnauthorized:
+		log.Println("Unauthorized")
+		log.Fatal("Please check if you have set a valid", CLIENT_ID_ENV_NAME)
+	default:
+		log.Println("Error:", resp.Status)
+		log.Fatal(resp.Data.Error)
+	}
 }
 func Upload(files []string) {
 	if len(strings.TrimSpace(os.Getenv(CLIENT_ID_ENV_NAME))) == 0 {
