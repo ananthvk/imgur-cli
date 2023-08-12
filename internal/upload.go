@@ -17,7 +17,7 @@ var logger = log.New(os.Stdout, "", 0)
 // Upload - Uploads the list of files to imgur.
 // files - Slice of strings, which represents paths of the files to upload
 
-func uploadFile(file string) {
+func uploadFile(file string, client *http.Client) {
 	// Create a buffer for storing the multipart data
 	buffer := new(bytes.Buffer)
 	// Create a multipart writer
@@ -42,7 +42,6 @@ func uploadFile(file string) {
 	}
 	writer.Close()
 	// Create the headers, and fields
-	client := &http.Client{Timeout: TIMEOUT}
 	req, err := http.NewRequest(http.MethodPost, API_URL, buffer)
 	if err != nil {
 		log.Println("internal error: while creating http request")
@@ -57,6 +56,7 @@ func uploadFile(file string) {
 	}
 	defer response.Body.Close()
 	// Read the response and decode the json into the struct
+
 	resp, err := DecodeResponse(response.Body)
 	if err != nil {
 		log.Println("error: could not read response")
@@ -82,7 +82,8 @@ func Upload(files []string) {
 		fmt.Fprintf(os.Stderr, HELP_ENV_MESSAGE)
 		os.Exit(2)
 	}
+	client := &http.Client{Timeout: TIMEOUT}
 	for _, file := range files {
-		uploadFile(file)
+		uploadFile(file, client)
 	}
 }
