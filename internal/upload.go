@@ -10,14 +10,17 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var logger = log.New(os.Stdout, "", 0)
+var wg sync.WaitGroup
 
 // Upload - Uploads the list of files to imgur.
 // files - Slice of strings, which represents paths of the files to upload
 
 func uploadFile(file string, client *http.Client) {
+	defer wg.Done()
 	// Create a buffer for storing the multipart data
 	buffer := new(bytes.Buffer)
 	// Create a multipart writer
@@ -84,6 +87,8 @@ func Upload(files []string) {
 	}
 	client := &http.Client{Timeout: TIMEOUT}
 	for _, file := range files {
-		uploadFile(file, client)
+		wg.Add(1)
+		go uploadFile(file, client)
 	}
+	wg.Wait()
 }

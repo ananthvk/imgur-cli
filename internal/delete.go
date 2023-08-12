@@ -8,9 +8,13 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 )
 
+var wgd sync.WaitGroup
+
 func deleteFile(deleteHash string, client *http.Client) {
+	defer wgd.Done()
 	u, err := url.Parse(API_URL)
 	if err != nil {
 		log.Fatal("internal error:", "Invalid API url\n")
@@ -61,6 +65,8 @@ func Delete(deleteHashes []string) {
 	}
 	client := &http.Client{Timeout: TIMEOUT}
 	for _, deleteHash := range deleteHashes {
+		wgd.Add(1)
 		deleteFile(deleteHash, client)
 	}
+	wgd.Wait()
 }

@@ -12,7 +12,8 @@ var writer = flag.CommandLine.Output()
 
 // Custom usage/help function
 func Usage() {
-	fmt.Fprintf(writer, "imgur-cli: A CLI to upload images to imgur anonymously\n\n")
+	fmt.Fprintf(writer, "imgur-cli: A CLI to upload images to imgur anonymously\n")
+	fmt.Fprintf(writer, "Get the latest version at https://github.com/ananthvk/imgur-cli\n\n")
 	fmt.Fprintf(writer, "Usage:\n\n")
 	flag.PrintDefaults()
 	/*
