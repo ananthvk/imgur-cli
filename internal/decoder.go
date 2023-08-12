@@ -7,10 +7,10 @@ import (
 )
 
 type ImgData struct {
-	Link        string          `json:"link"`
-	DeleteHash  string          `json:"deletehash"`
-	Id          string          `json:"id"`    // ID of the uploaded image
-	Error       json.RawMessage `json:"error"` // Only available when Success is false
+	Link        string           `json:"link"`
+	DeleteHash  string           `json:"deletehash"`
+	Id          string           `json:"id"`    // ID of the uploaded image
+	Error       *json.RawMessage `json:"error"` // Only available when Success is false
 	ErrorString string
 }
 
@@ -26,14 +26,19 @@ func DecodeResponse(r io.Reader) (response Response, err error) {
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(response.Data.Error, &response.Data.ErrorString)
+	// There are no errors
+	if response.Data.Error == nil {
+		response.Data.ErrorString = ""
+		return
+	}
+	err = json.Unmarshal(*response.Data.Error, &response.Data.ErrorString)
 	if err != nil {
 		type ImgurException struct {
 			Code    int
 			Message string
 		}
 		var imex ImgurException
-		err = json.Unmarshal(response.Data.Error, &imex)
+		err = json.Unmarshal(*response.Data.Error, &imex)
 		if err != nil {
 			return
 		}
