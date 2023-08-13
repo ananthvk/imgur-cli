@@ -103,7 +103,7 @@ func Run() {
 			ColorReset()
 			exitRunHelp()
 		}
-		internal.Upload(args[1:])
+		internal.Upload(args[1:], noColor)
 	case "delete":
 		if len(args) == 1 {
 			ColorError()
